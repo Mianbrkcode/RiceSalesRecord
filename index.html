@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS System</title>
+    <style>
+        body{
+            margin: 0;
+        }
+        h2{
+            text-align: center;
+        }
+        .ep{
+            width: 300px;
+            margin: auto;
+            border: 3px solid lightblue;
+            padding: 30px 40px;
+            line-height: 2;
+            background-color: bisque;
+        }
+        .ep h2{
+            margin: 0;
+            margin-bottom: 10px;
+        }
+        .addbtn{
+            text-align: center;
+            margin: 20px 0 0;
+
+            button{
+                background-color: greenyellow;
+                padding: 10px;
+                border: solid grey 3px;
+                border-radius: 50px;
+                font-size: large;
+               
+            }
+        }
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+
+            select{
+                width: 55%;
+            }
+        }
+
+        .column{
+            float: left;
+            margin-top: 10px;
+            background-color: bisque;
+            margin-left: 1.5%;
+        }
+
+        .column.right{
+            width: 47%;
+            border: 5px solid lightblue;
+        }
+        .column.left{
+            width: 47%;
+            border: 5px solid lightblue;
+        }
+        .column h3{
+            text-align: center;
+        }
+
+        /* Clear floats after the columns */
+        .row::after {
+        content: "";
+        display: table;
+        clear: both;
+        }
+
+        /* Responsive layout - makes the three columns stack on top of each other instead of next to each other */
+        @media screen and (max-width: 900px) {
+            .column.left, .column.right {
+                width: 100%;
+            }
+        }
+
+        table{
+            border: 1px solid;
+            width: 100%;
+        
+
+
+            th{
+                text-align: center;
+            }
+
+            td{
+                text-align: center;
+            }
+        }
+
+        .tble-cont{
+            margin: 10px;
+        }
+    </style>
+    <script>
+
+        let listData = [];
+        let int_ID = 0;
+
+        const rice_list  = [
+            ['Buko Pandan', 50, 4.8],
+            ['Super Angelica' , 49, 6],
+            ['White Magic', 47, 6],
+            ['Magic Castle' , 52, 6]
+        ];
+
+        function autoAmount(){
+            let quantity = document.getElementById('qty');
+            let rice = document.getElementById('rice_select');
+            let price = document.getElementById('amount');
+    
+            if(quantity.value == ""){
+                quantity.value = 1; 
+            }
+            if( rice.value == ""){
+                price.value = "";
+            }
+            else if(rice.value === rice_list[0][0]){
+                price.value = rice_list[0][1] * quantity.value;
+            }else if(rice.value === rice_list[1][0]){
+                price.value = rice_list[1][1] * quantity.value;
+            }else if(rice.value === rice_list[2][0]){
+                price.value = rice_list[2][1] * quantity.value;
+            }else if(rice.value === rice_list[3][0]){
+                price.value = rice_list[3][1] * quantity.value;
+            }
+        }
+        //Add Data function
+        function addBtn(){
+
+            // getting the value
+            let qty = document.getElementById('qty').value;
+            let amount = document.getElementById('amount').value;
+            let rice_select = document.getElementById('rice_select').value;
+            let payment_method = document.getElementById('payment_method').value;
+            let profit = 0;
+
+            if( rice_select == "Buko Pandan"){
+                profit = rice_list[0][2];
+            }else if(rice_select == "Super Angelica"){
+                profit = rice_list[1][2];
+            }else if(rice_select == "White Magic"){
+                profit = rice_list[2][2];
+            }
+
+            //make product object
+            const productsObj = {
+                id: int_ID++,
+                quantity: parseInt(qty),
+                item: rice_select,
+                amount: parseFloat(amount),
+                profit: parseFloat(profit),
+                payment_method: payment_method
+            };
+
+            // pushes the product object to the array and condition if the input element is empty
+            if(qty == ""){
+                alert('Put a Quantity');
+            }else if(rice_select == ""){
+                alert('Please Select Rice');
+            }else if(amount == ""){
+                alert('Put an Amount');
+            }else if(payment_method == ""){
+                alert('please select payment method');
+            }else{
+                listData.push(productsObj);
+            }
+            
+            //call the updateTable function to display the new input data
+            updateTable();
+            salesSummary();
+            //Clear the inputs
+            document.getElementById('qty').value ="";
+            document.getElementById('amount').value = "";
+            document.getElementById('rice_select').value = "";
+            console.log(listData);
+        }
+        //Update table Function
+        function updateTable(){
+
+            const tableBody = document.getElementById('tableBody');
+
+            tableBody.innerHTML = '';
+            //iterate data list
+            listData.forEach(data => {
+                const row = document.createElement('tr');
+                const columnId = document.createElement('td');
+                const columnQty = document.createElement('td');
+                const columnItem = document.createElement('td');
+                const columnAmount = document.createElement('td');
+                const columnPayment = document.createElement('td');
+                const columnAction = document.createElement('td');
+                const deleteBtn = document.createElement('Button');
+
+
+                columnId.textContent = data.id;
+                columnQty.textContent = data.quantity;
+                columnItem.textContent = data.item;
+                columnAmount.textContent = data.amount.toFixed(2);
+                columnPayment.textContent = data.payment_method;
+                deleteBtn.innerText = "Delete";
+                deleteBtn.onclick = () => deleteProduct(data.id);
+               
+                row.appendChild(columnId);
+                row.appendChild(columnQty);
+                row.appendChild(columnItem);
+                row.appendChild(columnAmount);
+                row.appendChild(columnPayment);
+                row.appendChild(columnAction);
+                columnAction.appendChild(deleteBtn);
+                tableBody.appendChild(row);
+            });
+        }
+        //Delete Function
+        function deleteProduct(id){
+            listData = listData.filter(product => product.id !== id);
+            updateTable();
+            salesSummary();
+        }
+        function salesSummary(){
+            const totalSales = document.getElementById("totalSales");
+            const totalProfit = document.getElementById("totalProfit");
+
+            const sumSales = listData.reduce((sum, item) => sum + item.amount, 0);
+            totalSales.innerText = sumSales;
+            const sumProfit = listData.reduce((sum, item) => sum + item.profit, 0);
+            totalProfit.innerText = sumProfit.toFixed(1);
+        }
+
+    </script>
+</head>
+<body>
+    <h2>Sales Record</h2>
+   
+        <Form>
+            <div class="ep">
+                <h2>Retail</h2>
+                <div class="input-group">
+                    <label for="quantity">Qty: </label>
+                    <input type="number" id="qty" value="" placeholder="Enter the quanty (kg)" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="products">Items/ Products: </label>
+                    <Select id="rice_select" name="rice_select" onchange="autoAmount()">
+                        <option value="" selected>Select Rice</option>
+                        <option value="Buko Pandan">Buko Pandan</option>
+                        <option value="Super Angelica">Super Angelica</option>
+                        <option value="White Magic">White Magic</option>
+                        <option value="Magic Castle">Magic Castle</option>
+                    </Select>
+                </div>
+                <div class="input-group">
+                    <label for="price">Amount: </label>
+                    <input type="number" id="amount" name="amount" value=""  placeholder="fill the amount" required>
+                </div>
+                <div class="input-group">
+                    <label for="payment">Mode of Payment: </label>
+                    <Select id="payment_method" name="payment_method">
+                        <option value="Cash">Cash</option>
+                        <option value="Gcash">Gcash</option>
+                    </Select>
+                </div>
+    
+                <div class="addbtn">
+                    <button type="button" onclick="addBtn()">Add on Sales</button>
+                </div>
+    
+            </div>
+        </Form>
+
+    <div class="row">
+          <!-- Sales list -->
+          <div class="column left">
+            <h3>Sales List</h3>
+            <div class="tble-cont">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Qty</th>
+                            <th>Items</th>
+                            <th>Amount</th>
+                            <th>Mode of Payment</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <!-- Total -->
+        <div class="column right">
+            <h3>Amount Summary</h3>
+            <div class="tble-cont">
+                <table>
+                    <tr>
+                       <th>Total Sales</th>
+                       <td id="totalSales"></td>
+                    </tr>
+                    <tr>
+                        <th>Profit</th>
+                        <td id="totalProfit"></td>
+                     </tr>
+                </table>
+            </div>
+        </div>
+    </div> 
+   
+</body>
+</html>

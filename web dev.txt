@@ -1,0 +1,9 @@
+flow for out project:
+
+website has the following:
+
+Registration
+Log-in
+Create Campaigns/ Plans
+Isite Calendar/ Schedule
+Events
